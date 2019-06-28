@@ -130,7 +130,7 @@ class News extends StatelessWidget {
 }
 void main() => runApp(
   new MaterialApp(
-    debugShowCheckedModeBanner: false
+    debugShowCheckedModeBanner: false,
     home: new Scaffold(
       appBar: new AppBar(),
       body: new News('Flutter good', 'Flutter very good', imageUrl: 'https://flutter.su/favicon.png', like: true, num: 97,),
