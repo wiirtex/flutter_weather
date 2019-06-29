@@ -1,69 +1,93 @@
 import 'dart:math';
-
+import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:email_validator/email_validator.dart';
 
-class MyForm extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return new MyFormState();
+import 'package:http/http.dart' as http;
+
+String city = "Ufa";
+String cityKey = "292177";
+String accessKey = "Gz8HKO1zorpYGAr2JvUj0VsEY10gFwu9";
+
+class Post {
+  final String weatherText;
+  final double temperature;
+
+  Post({this.weatherText, this.temperature});
+
+  factory Post.fromJson(List<dynamic> json) {
+  print(json[0]["WeatherText"]);
+  print(json[0]["Temperature"]["Metric"]["Value"]);
+  return Post(
+    weatherText: json[0]["WeatherText"].toString(),
+    temperature: json[0]["Temperature"]["Metric"]["Value"]
+  );
   }
 }
 
-class MyFormState extends State<MyForm> {
-  final _formkey = GlobalKey<FormState>();
+class First extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return new Form(
-        key:_formkey,
-        child:
-        new Container(
-            child: new Column(
-              children: <Widget>[
-                new Text("Name", style: new TextStyle(fontSize: 25.0),),
-                new TextFormField(
-                    validator: (value){
-                      if (value == null)
-                        return 'Enter yout name';
-                    },
-                ),
+    return new AccuWeather('wer', 4);
+  }
+}
 
-                new SizedBox(height: 20.0,),
 
-                new Text("E-mail", style: new TextStyle(fontSize: 25.0),),
-                new TextFormField(
-                  validator: (value){
-                    if (!EmailValidator.validate(value))
-                      return "That's not e-mail";
-                  },
-                ),
+class AccuWeather extends StatefulWidget {
+  final String _weather;
+  final double _temp;
+  AccuWeather(this._weather, this._temp);
+  @override
+  State<StatefulWidget> createState() {
+    return new AccuWeatherState(_weather, _temp);
+  }
+}
 
-                new SizedBox(height: 20.0,),
+class AccuWeatherState extends State<AccuWeather> {
+  String _weather;
+  double _temperature;
 
-                new RaisedButton(onPressed: (){
-                  if(_formkey.currentState.validate())
-                    Scaffold.of(context).showSnackBar(
-                        SnackBar(
-                          content:
-                          Text('Форма успешно заполнена'
-                          ),
-                          backgroundColor: Colors.green,
-                        )
-                    );
-                },
-                  child:
-                  new Text('Проверить'),
-                  color: Colors.blue,
-                  textColor: Colors.white,
-                ),
-              ],
-            )
-        )
+  AccuWeatherState(this._weather, this._temperature);
 
+  @override
+  Widget build(BuildContext context) {
+    return new Container(
+      padding: EdgeInsets.all(10.0),
+      child: new Column(
+        children: <Widget>[
+          new Text(city),
+          new SizedBox(height: 25.0,),
+          new Text(_weather),
+          new SizedBox(height: 25.0,),
+          new Text(_temperature.toString()),
+          new SizedBox(height: 25.0,),
+          new FlatButton(onPressed: () {
+            print("Grre");
+            PressBtn();
+          },
+              child: new Text("lol"))
+        ],
+      ),
     );
   }
 
-
+  void PressBtn() {
+    setState(() {
+      http.get(
+          "http://dataservice.accuweather.com/currentconditions/v1/292177?apikey=Gz8HKO1zorpYGAr2JvUj0VsEY10gFwu9&language=ru-ru")
+          .then((response) {
+        Post new_weather;
+        new_weather = Post.fromJson(jsonDecode(response.body));
+        print(new_weather.weatherText);
+        this._weather = new_weather.weatherText;
+        this._temperature = new_weather.temperature.toDouble();
+        print("Im here");
+        AccuWeatherState(this._weather, this._temperature);
+        print("So what");
+      }).catchError((error) {
+        print("Error $error");
+      });
+    });
+  }
 }
 
 void main() {
@@ -72,9 +96,9 @@ void main() {
         debugShowCheckedModeBanner: false,
         home: new Scaffold(
             appBar: new AppBar(
-              title: new Text("Form"),
+              title: new Text("Цуферук"),
             ),
-            body: new MyForm()
+            body: new First()
         )
     )
   );
