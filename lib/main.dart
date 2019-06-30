@@ -1,23 +1,25 @@
 import 'dart:math';
 import 'dart:convert';
 import 'package:flutter/material.dart';
-
+import 'whatCity.dart';
 import 'package:http/http.dart' as http;
 
-String city = "Ufa";
-String cityKey = "292177";
+String myCity = "Ufa";
+String myCityKey = "292177";
 String accessKey = "Gz8HKO1zorpYGAr2JvUj0VsEY10gFwu9";
 
-class Post {
+
+
+class PostWeather {
   final String weatherText;
   final double temperature;
 
-  Post({this.weatherText, this.temperature});
+  PostWeather({this.weatherText, this.temperature});
 
-  factory Post.fromJson(List<dynamic> json) {
+  factory PostWeather.fromJson(List<dynamic> json) {
   print(json[0]["WeatherText"]);
   print(json[0]["Temperature"]["Metric"]["Value"]);
-  return Post(
+  return PostWeather(
     weatherText: json[0]["WeatherText"].toString(),
     temperature: json[0]["Temperature"]["Metric"]["Value"]
   );
@@ -47,14 +49,14 @@ class AccuWeatherState extends State<AccuWeather> {
   double _temperature;
 
   AccuWeatherState(this._weather, this._temperature);
-
+//TODO make sexy design
   @override
   Widget build(BuildContext context) {
     return new Container(
       padding: EdgeInsets.all(10.0),
       child: new Column(
         children: <Widget>[
-          new Text(city),
+          new Text(myCity),
           new SizedBox(height: 25.0,),
           new Text(_weather),
           new SizedBox(height: 25.0,),
@@ -64,7 +66,15 @@ class AccuWeatherState extends State<AccuWeather> {
             print("Grre");
             PressBtn();
           },
-              child: new Text("lol"))
+              child: new Text("lol")),
+          new SizedBox(height: 25.0,),
+          new RaisedButton(
+            onPressed: () {
+              print("Navigator Push!");
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => SecondScreen()));
+            }, child: Text('Открыть второе окно')
+          )
         ],
       ),
     );
@@ -73,14 +83,14 @@ class AccuWeatherState extends State<AccuWeather> {
   void PressBtn() {
     setState(() {
       http.get(
-          "http://dataservice.accuweather.com/currentconditions/v1/292177?apikey=Gz8HKO1zorpYGAr2JvUj0VsEY10gFwu9&language=ru-ru")
+          "http://dataservice.accuweather.com/currentconditions/v1/$myCityKey?apikey=$accessKey&language=ru-ru")
           .then((response) {
-        Post new_weather;
-        new_weather = Post.fromJson(jsonDecode(response.body));
+
+        PostWeather new_weather;
+        new_weather = PostWeather.fromJson(jsonDecode(response.body));
         print(new_weather.weatherText);
         this._weather = new_weather.weatherText;
         this._temperature = new_weather.temperature.toDouble();
-        print("Im here");
         AccuWeatherState(this._weather, this._temperature);
         print("So what");
       }).catchError((error) {
